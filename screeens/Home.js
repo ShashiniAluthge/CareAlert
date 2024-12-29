@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useContext} from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   View,
   Text,
@@ -9,44 +9,24 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import axios from 'axios';
-import {CountContext} from '../context/CountContext';
+import { CountContext } from '../context/CountContext';
 import SearchBar from '../components/SearchBar';
 import notificationIcon from '../images/notification.png';
+//import placeholderFlag from '../images/placeholderFlag.png'; // Add a placeholder image to your project
 
-import covid1 from '../images/cardImages/covid1.jpg';
-import covid2 from '../images/cardImages/covid2.jpg';
-import covid3 from '../images/cardImages/covid3.jpg';
-import covid4 from '../images/cardImages/covid4.jpg';
-import covid5 from '../images/cardImages/covid5.jpg';
-import covid6 from '../images/cardImages/covid6.jpg';
-import covid7 from '../images/cardImages/covid7.jpg';
-import covid8 from '../images/cardImages/covid8.jpg';
-import covid9 from '../images/cardImages/covid9.jpg';
-import covid10 from '../images/cardImages/covid10.jpg';
-import covid11 from '../images/cardImages/covid11.jpg';
-import covid12 from '../images/cardImages/covid12.jpg';
-import covid13 from '../images/cardImages/covid13.jpg';
-import covid14 from '../images/cardImages/covid14.jpg';
-import covid15 from '../images/cardImages/covid15.jpg';
-import covid16 from '../images/cardImages/covid16.jpg';
-import covid17 from '../images/cardImages/covid17.jpg';
-import covid18 from '../images/cardImages/covid18.jpg';
-import covid19 from '../images/cardImages/covid19.jpg';
-import covid20 from '../images/cardImages/covid20.jpg';
-
-const Home = ({route}) => {
-  const {name} = route.params;
+const Home = ({ route }) => {
+  const { name } = route.params;
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-
-  const {count, setCount} = useContext(CountContext);
+  const { count, setCount } = useContext(CountContext);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
+        // Fetch COVID-19 data
+        const covidResponse = await axios.get(
           'https://covid-193.p.rapidapi.com/statistics',
           {
             headers: {
@@ -54,98 +34,92 @@ const Home = ({route}) => {
                 '6310bd4c1dmshb71acfd1972974ap1a6af8jsne5e250f9e962',
               'X-Rapidapi-Host': 'covid-193.p.rapidapi.com',
             },
-          },
+          }
         );
-        const topCountries = response.data.response.map((item, index) => ({
+  
+        // Fetch country flags
+        const flagsResponse = await axios.get(
+          'https://restcountries.com/v3.1/all?fields=name,flags'
+        );
+  
+        // Map flags to country names
+        const flagsMap = flagsResponse.data.reduce((acc, country) => {
+          acc[country.name.common.toLowerCase()] = country.flags?.png || null;
+          return acc;
+        }, {});
+  
+        // Placeholder image for missing flags
+        const placeholderImage = 'https://via.placeholder.com/150';
+  
+        // Map COVID-19 data with corresponding flags
+        const mergedData = covidResponse.data.response.map((item) => ({
           ...item,
-          image: images[index % images.length],
+          flag: flagsMap[item.country.toLowerCase()] || placeholderImage,
         }));
-        setData(topCountries);
-        setFilteredData(topCountries);
+  
+        setData(mergedData);
+        setFilteredData(mergedData);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchData();
   }, []);
+  
 
-  const images = [
-    covid1,
-    covid2,
-    covid3,
-    covid4,
-    covid5,
-    covid6,
-    covid7,
-    covid8,
-    covid9,
-    covid10,
-    covid11,
-    covid12,
-    covid13,
-    covid14,
-    covid15,
-    covid16,
-    covid17,
-    covid18,
-    covid19,
-    covid20,
-  ];
-
-  const handleSearch = query => {
+  const handleSearch = (query) => {
     setSearchQuery(query);
     if (query === '') {
       setFilteredData(data);
     } else {
-      const filtered = data.filter(item =>
-        item.country.toLowerCase().startsWith(query.toLowerCase()),
+      const filtered = data.filter((item) =>
+        item.country.toLowerCase().startsWith(query.toLowerCase())
       );
       setFilteredData(filtered);
     }
   };
 
-  const renderCard = ({item}) => {
-    return (
-      <View style={{paddingHorizontal: 15}}>
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() => setCount(count + 1)}>
-          <Image source={item.image} style={styles.cardImage} />
-          <Text style={styles.cardTitle}>{item.country}</Text>
-          <Text style={styles.cardItem}>
-            Total Cases: {item.cases.total || 'N/A'}
-          </Text>
-          <Text style={{color: 'red'}}>
-            Total Deaths: {item.deaths.total || 'N/A'}
-          </Text>
-          <Text style={styles.cardItem}>
-            Total Tests: {item.tests.total || 'N/A'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    );
-  };
+  const renderCard = ({ item }) => (
+    <View style={{ paddingHorizontal: 15 }}>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => setCount(count + 1)}
+      >
+        <Image source={{ uri: item.flag }} style={styles.cardImage} />
+        <Text style={styles.cardTitle}>{item.country}</Text>
+        <Text style={styles.cardItem}>
+          Total Cases: {item.cases.total || 'N/A'}
+        </Text>
+        <Text style={{ color: 'red' }}>
+          Total Deaths: {item.deaths.total || 'N/A'}
+        </Text>
+        <Text style={styles.cardItem}>
+          Total Tests: {item.tests.total || 'N/A'}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+  
 
   return (
     <View style={styles.container}>
-     <View style={styles.welcomeContainer}>
-  <View>
-    <Text style={styles.welcome}>Welcome, {name} !</Text>
-    <Text style={styles.subtitle}>
-      Your trusted platform for health and safety updates.
-    </Text>
-  </View>
-  <TouchableOpacity style={styles.notificationIconContainer}>
-    <Image source={notificationIcon} style={{tintColor: '#fff'}} />
-  </TouchableOpacity>
-</View>
-
+      <View style={styles.welcomeContainer}>
+        <View>
+          <Text style={styles.welcome}>Welcome, {name}!</Text>
+          <Text style={styles.subtitle}>
+            Your trusted platform for health and safety updates.
+          </Text>
+        </View>
+        <TouchableOpacity style={styles.notificationIconContainer}>
+          <Image source={notificationIcon} style={{ tintColor: '#fff' }} />
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.descriptionContainer}>
-        <Text style={{fontWeight: '500', fontSize: 20}}>
+        <Text style={{ fontWeight: '500', fontSize: 20 }}>
           Global COVID-19 Updates
         </Text>
         <Text style={styles.description}>
@@ -155,7 +129,7 @@ const Home = ({route}) => {
         </Text>
       </View>
 
-      <View style={{marginBottom: 15}}>
+      <View style={{ marginBottom: 15 }}>
         <SearchBar value={searchQuery} onChange={handleSearch} />
       </View>
 
@@ -186,7 +160,7 @@ const styles = StyleSheet.create({
   welcomeContainer: {
     backgroundColor: '#1D3B6C',
     flexDirection: 'row',
-    justifyContent: 'space-between', 
+    justifyContent: 'space-between',
     alignItems: 'center',
     paddingBottom: 35,
     paddingTop: 25,
@@ -228,7 +202,7 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 5,
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     elevation: 3,
     paddingHorizontal: 25,
   },
@@ -247,18 +221,6 @@ const styles = StyleSheet.create({
   cardItem: {
     color: '#2E2E2E',
   },
-  cardButton: {
-    backgroundColor: '#16A085',
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    borderRadius: 5,
-    marginTop: 10,
-    alignItems: 'center',
-  },
-  cardButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
   floatingButtonContainer: {
     position: 'absolute',
     bottom: 30,
@@ -275,7 +237,7 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOpacity: 0.3,
     shadowRadius: 5,
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     elevation: 5,
   },
   floatingButtonText: {
