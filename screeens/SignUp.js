@@ -9,29 +9,25 @@ import {
   Image,
   Linking,
 } from 'react-native';
+import { useUser } from '../context/UserContext';
 import nameValidation from '../Validations/nameValidation';
 import passwordValidation from '../Validations/passwordValidation';
 import emailValidation from '../Validations/emailValidation';
 import confirmPasswordValidation from '../Validations/confirmePasswordValidation';
-import Arrow from '../images/arrow.png';
 
 const SignUp = () => {
   const navigation = useNavigation();
-  const [isLoading, setIsLoading] = useState(false);
+  const { signUp } = useUser();
   const [name, setName] = useState('');
-  const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState({
     name: '',
-    password: '',
     email: '',
+    password: '',
     confirmPassword: '',
   });
-
-  const handleLogin = () => {
-    navigation.navigate('Login');
-  };
 
   const validateName = (name) => {
     const error = nameValidation(name);
@@ -87,10 +83,7 @@ const SignUp = () => {
       return;
     }
 
-    const confirmPasswordError = confirmPasswordValidation(
-      confirmPassword,
-      password,
-    );
+    const confirmPasswordError = confirmPasswordValidation(confirmPassword, password);
 
     if (confirmPasswordError) {
       setErrorMessage({
@@ -103,31 +96,26 @@ const SignUp = () => {
     }
 
     setErrorMessage({ name: '', email: '', password: '', confirmPassword: '' });
+
+    signUp(name, email, password);
     navigation.navigate('Login');
   };
 
-  const handleSocialButtonPress = (url) => {
-    Linking.openURL(url).catch((err) =>
-      console.error('Failed to open URL:', err),
-    );
-  };
-  const handleBackArrow = () => {
-    navigation.navigate('Welcome');
-  };
-
+   const handleSocialButtonPress = async (url) => {
+     try {
+       await Linking.openURL(url);
+     } catch (err) {
+       console.error('Failed to open URL:', err);
+     }
+   };
+   
   return (
     <View style={styles.container}>
-   
-
-      {/* Top Section */}
       <View style={styles.topView}>
-        
-      
         <Text style={styles.titleText}>Create an Account</Text>
         <Text style={styles.subText}>Please fill in the details to sign up</Text>
       </View>
 
-      {/* Middle Section */}
       <View style={styles.middleView}>
         <TextInput
           style={styles.input}
@@ -187,16 +175,10 @@ const SignUp = () => {
           <Text style={styles.errorText}>{errorMessage.confirmPassword}</Text>
         ) : null}
 
-        <TouchableOpacity
-          style={styles.signUpButton}
-          onPress={handleSignUp}
-          disabled={isLoading}>
-          <Text style={styles.signUpButtonText}>
-            {isLoading ? 'Signing Up...' : 'Sign Up'}
-          </Text>
+        <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
+          <Text style={styles.signUpButtonText}>Sign Up</Text>
         </TouchableOpacity>
 
-        {/* Bottom Section */}
         <View style={styles.bottomView}>
           <View style={styles.dividerContainer}>
             <View style={styles.line} />
@@ -207,7 +189,8 @@ const SignUp = () => {
           <View style={styles.socialLoginContainer}>
             <TouchableOpacity
               style={styles.socialButton}
-              onPress={() => handleSocialButtonPress('https://www.google.com')}>
+              onPress={() => handleSocialButtonPress('https://www.google.com')}
+            >
               <View style={styles.socialContent}>
                 <Image
                   source={{
@@ -222,7 +205,8 @@ const SignUp = () => {
               style={styles.socialButton}
               onPress={() =>
                 handleSocialButtonPress('https://www.facebook.com')
-              }>
+              }
+            >
               <View style={styles.socialContent}>
                 <Image
                   source={{
@@ -236,9 +220,9 @@ const SignUp = () => {
           </View>
 
           <View style={styles.signUpContainer}>
-            <Text style={{ color: '#aaa' }}>Already have an account?</Text>
-            <TouchableOpacity onPress={handleLogin}>
-              <Text style={styles.loginText}>Login</Text>
+          <Text style={{ color: '#aaa' }}>Already have an account?</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+            <Text style={styles.loginText}>Login</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -256,7 +240,7 @@ const styles = StyleSheet.create({
   },
   topView: {
     flex: 2,
-    backgroundColor: '#1D3B6C', 
+    backgroundColor: '#1D3B6C',
     justifyContent: 'center',
     borderBottomLeftRadius: 150,
     paddingHorizontal: 15,
