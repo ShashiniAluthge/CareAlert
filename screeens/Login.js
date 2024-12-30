@@ -1,20 +1,21 @@
 import React, {useState} from 'react';
+import {useNavigation} from '@react-navigation/native';
 import {
-  Image,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
   Linking,
+  Image
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {useUser} from '../context/UserContext';
 import nameValidation from '../Validations/nameValidation';
 import passwordValidation from '../Validations/passwordValidation';
 
-
 const Login = () => {
   const navigation = useNavigation();
+  const {users, login} = useUser();
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState({name: '', password: ''});
@@ -44,28 +45,34 @@ const Login = () => {
     // Clear errors if validation is successful
     setErrorMessage({name: '', password: ''});
 
-    navigation.navigate('Home', {name});
+    const success = login(name, password);
+    if (success) {
+      navigation.navigate('Home', {name});
+    } else {
+      setErrorMessage({name: '', password: 'Invalid credentials'});
+    }
   };
 
   const handleSignUpText = () => {
     navigation.navigate('SignUp');
   };
 
-  const handleSocialButtonPress = url => {
-    Linking.openURL(url).catch(err =>
-      console.error('Failed to open URL:', err),
-    );
+  const handleSocialButtonPress = async (url) => {
+    try {
+      await Linking.openURL(url);
+    } catch (err) {
+      console.error('Failed to open URL:', err);
+    }
   };
+  
 
   return (
     <View style={styles.container}>
-      {/* Top Section */}
       <View style={styles.topView}>
         <Text style={styles.titleText}>Welcome Back !</Text>
         <Text style={styles.subText}>Please log in to continue</Text>
       </View>
 
-      {/* Middle Content */}
       <View style={styles.middleView}>
         <View style={styles.middleBox}>
           {/* Username Input */}
@@ -188,9 +195,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#1D3B6C',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  backArrow: {
-    margin: 20,
   },
   titleText: {
     fontSize: 34,

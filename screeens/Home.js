@@ -12,7 +12,7 @@ import axios from 'axios';
 import { CountContext } from '../context/CountContext';
 import SearchBar from '../components/SearchBar';
 import notificationIcon from '../images/notification.png';
-//import placeholderFlag from '../images/placeholderFlag.png'; // Add a placeholder image to your project
+
 
 const Home = ({ route }) => {
   const { name } = route.params;
