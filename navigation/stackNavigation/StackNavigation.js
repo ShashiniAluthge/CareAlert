@@ -4,14 +4,15 @@ import Login from '../../screeens/Login';
 import SignUp from '../../screeens/SignUp';
 import Welcome from '../../screeens/Welcome';
 import Home from '../../screeens/Home';
-import { UserProvider } from '../../context/UserContext'; // Import the UserProvider
+import { UserProvider } from '../../context/UserContext';
 import { CountProvider } from '../../context/CountContext';
+import CardDetails from '../../screeens/CardDetails';
 
 const Stack = createNativeStackNavigator();
 
 const StackNavigation = () => {
   return (
-    // Wrap your navigator inside the UserProvider so that the user context is accessible across screens
+
     <UserProvider>
       <CountProvider>
         <Stack.Navigator initialRouteName="Welcome" screenOptions={{ headerShown: false }}>
@@ -19,6 +20,8 @@ const StackNavigation = () => {
           <Stack.Screen name="SignUp" component={SignUp} />
           <Stack.Screen name="Login" component={Login} />
           <Stack.Screen name="Home" component={Home} />
+          <Stack.Screen name="CardDetails" component={CardDetails} />
+
         </Stack.Navigator>
       </CountProvider>
     </UserProvider>

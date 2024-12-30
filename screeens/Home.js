@@ -12,9 +12,10 @@ import axios from 'axios';
 import { CountContext } from '../context/CountContext';
 import SearchBar from '../components/SearchBar';
 import notificationIcon from '../images/notification.png';
-
+import { useNavigation } from '@react-navigation/native';
 
 const Home = ({ route }) => {
+  const navigation = useNavigation();
   const { name } = route.params;
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -68,7 +69,6 @@ const Home = ({ route }) => {
   
     fetchData();
   }, []);
-  
 
   const handleSearch = (query) => {
     setSearchQuery(query);
@@ -82,11 +82,43 @@ const Home = ({ route }) => {
     }
   };
 
+  const handleMoreButtonPress = (item) => {
+    // Increase the count
+    setCount(count + 1);
+
+    // Navigate to CardDetails page
+    navigation.navigate('CardDetails', {
+      country: item.country,
+      flag: item.flag,
+      cases: item.cases,
+      deaths: item.deaths,
+      tests: item.tests,
+      population: item.population || 'N/A',
+      continent: item.continent || 'N/A',
+      critical: item.cases.critical || 'N/A',
+      active: item.cases.active || 'N/A',
+      recovered: item.cases.recovered || 'N/A',
+    });
+  };
+
   const renderCard = ({ item }) => (
     <View style={{ paddingHorizontal: 15 }}>
-      <TouchableOpacity
+      <View
         style={styles.card}
-        onPress={() => setCount(count + 1)}
+        onPress={() =>
+          navigation.navigate('CardDetails', {
+            country: item.country,
+            flag: item.flag,
+            cases: item.cases,
+            deaths: item.deaths,
+            tests: item.tests,
+            population: item.population || 'N/A',
+            continent: item.continent || 'N/A',
+            critical: item.cases.critical || 'N/A',
+            active: item.cases.active || 'N/A',
+            recovered: item.cases.recovered || 'N/A',
+          })
+        }
       >
         <Image source={{ uri: item.flag }} style={styles.cardImage} />
         <Text style={styles.cardTitle}>{item.country}</Text>
@@ -99,10 +131,17 @@ const Home = ({ route }) => {
         <Text style={styles.cardItem}>
           Total Tests: {item.tests.total || 'N/A'}
         </Text>
-      </TouchableOpacity>
+
+        {/* More button */}
+        <TouchableOpacity
+          style={styles.moreButton}
+          onPress={() => handleMoreButtonPress(item)}
+        >
+          <Text style={styles.moreButtonText}>More...</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
-  
 
   return (
     <View style={styles.container}>
@@ -220,6 +259,18 @@ const styles = StyleSheet.create({
   },
   cardItem: {
     color: '#2E2E2E',
+  },
+  moreButton: {
+    backgroundColor: '#1D3B6C',
+    borderRadius: 5,
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    alignItems: 'center',
+    alignSelf:'flex-end'
+  },
+  moreButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   floatingButtonContainer: {
     position: 'absolute',
